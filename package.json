@@ -77,7 +77,10 @@
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "react-native-mmkv-storage": "*",
+    "react-native-reanimated": "*",
+    "react-native-safe-area-context": "*"
   },
   "engines": {
     "node": ">= 16.0.0"

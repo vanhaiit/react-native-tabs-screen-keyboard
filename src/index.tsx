@@ -1,7 +1,6 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable radix */
 /* eslint-disable react-native/no-inline-styles */
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Keyboard,
   Pressable,
@@ -17,7 +16,10 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 const storage = new MMKVLoader().initialize();
 let heightTab: number = 0;
 function TabScreenKeyboard() {
@@ -79,6 +81,7 @@ function TabScreenKeyboard() {
       handleKeyBoard
     );
     return () => keyboardDidShowListener.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -86,63 +89,68 @@ function TabScreenKeyboard() {
   }, []);
 
   return (
-    <View
-      style={{
-        ...styles.container,
-        paddingBottom: insets.bottom,
-        paddingTop: insets.top,
-      }}
-    >
-      <Pressable style={styles.chatContainer} onPress={handleFocusMain}>
-        <View />
-      </Pressable>
+    <SafeAreaProvider>
       <View
         style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          padding: 10,
-          backgroundColor: '#f0f0f0',
+          ...styles.container,
+          paddingBottom: insets.bottom,
+          paddingTop: insets.top,
         }}
       >
-        {data.map((e, index) => (
-          <Pressable onPress={() => handleImagePickerPress(e.key)} key={index}>
-            {e.label}
-          </Pressable>
-        ))}
-        <TextInput
+        <Pressable style={styles.chatContainer} onPress={handleFocusMain}>
+          <View />
+        </Pressable>
+        <View
           style={{
-            flex: 1,
-            marginHorizontal: 10,
-            padding: 8,
-            backgroundColor: '#fff',
+            flexDirection: 'row',
+            alignItems: 'center',
+            padding: 10,
+            backgroundColor: '#f0f0f0',
           }}
-          placeholder="Type a message..."
-          value={inputText}
-          onChangeText={setInputText}
-          onFocus={onFocusInput}
-          // onBlur={onBlur}
-        />
-        <TouchableOpacity>
-          <View
+        >
+          {data.map((e, index) => (
+            <Pressable
+              onPress={() => handleImagePickerPress(e.key)}
+              key={index}
+            >
+              {e.label}
+            </Pressable>
+          ))}
+          <TextInput
             style={{
-              width: 24,
-              height: 24,
-              backgroundColor: 'blue',
-              borderRadius: 12,
+              flex: 1,
+              marginHorizontal: 10,
+              padding: 8,
+              backgroundColor: '#fff',
             }}
+            placeholder="Type a message..."
+            value={inputText}
+            onChangeText={setInputText}
+            onFocus={onFocusInput}
+            // onBlur={onBlur}
           />
-        </TouchableOpacity>
+          <TouchableOpacity>
+            <View
+              style={{
+                width: 24,
+                height: 24,
+                backgroundColor: 'blue',
+                borderRadius: 12,
+              }}
+            />
+          </TouchableOpacity>
+        </View>
+        <Animated.View style={translateStyle}>
+          {data.map((e, index) =>
+            tab === e.key ? (
+              <View style={{ flex: 1 }} key={index}>
+                {e.children}
+              </View>
+            ) : null
+          )}
+        </Animated.View>
       </View>
-      <Animated.View style={translateStyle}>
-        {data.map((e, index) =>
-          tab === e.key ? (
-            <View style={{ flex: 1 }} key={index}>
-              {e.children}
-            </View>
-          ) : null
-        )}
-      </Animated.View>
-    </View>
+    </SafeAreaProvider>
   );
 }
 
@@ -152,59 +160,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
   },
 
-  inputAccessory: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#f0f0f0',
-    padding: 10,
-  },
-
-  imageListContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  },
-  imageItem: {
-    width: 100,
-    height: 100,
-    margin: 10,
-    backgroundColor: '#ccc',
-  },
-
-  body: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-
-  inner: {
-    height: 56,
-    flexDirection: 'row',
-  },
-  header: {
-    fontSize: 36,
-    fontWeight: '500',
-    textAlign: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: 'red',
-  },
   textInput: {
     flex: 1,
     height: 40,
     borderColor: '#000000',
     borderBottomWidth: 1,
     marginBottom: 36,
-  },
-  btnContainer: {
-    backgroundColor: 'white',
-    marginTop: 12,
-  },
-
-  centeredView: {
-    // flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 300,
-    // marginTop: 22,
   },
 
   chatContainer: {
@@ -213,18 +174,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 16,
     backgroundColor: 'pink',
-  },
-  messageContainer: {
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
-  messageBubble: {
-    backgroundColor: '#e1e1e1',
-    padding: 8,
-    borderRadius: 8,
-  },
-  messageText: {
-    fontSize: 16,
   },
 });
 
@@ -245,6 +194,7 @@ export const data = [
   },
   {
     key: 2,
+
     label: (
       <View
         style={{
