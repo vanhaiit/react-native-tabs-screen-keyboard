@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable radix */
 /* eslint-disable react-native/no-inline-styles */
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Keyboard,
@@ -11,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { MMKVLoader, useMMKVStorage } from 'react-native-mmkv-storage';
 import Animated, {
   useAnimatedKeyboard,
   useAnimatedStyle,
@@ -18,6 +18,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+const storage = new MMKVLoader().initialize();
 let heightTab: number = 0;
 function TabScreenKeyboard() {
   const keyboard = useAnimatedKeyboard();
@@ -26,6 +27,12 @@ function TabScreenKeyboard() {
   const [tab, setTab] = useState<number | string | null | undefined>();
   const [inputText, setInputText] = useState('');
   const isKeyBoardRef = useRef(false);
+  const [heightKeyBoard, setHeightKeyBoardStorage] = useMMKVStorage(
+    'heightKeyBoard',
+    storage,
+    0
+  );
+  heightTab = heightKeyBoard;
   const translateStyle = useAnimatedStyle(() => {
     return {
       height: (offset.value || keyboard.height.value) - insets.bottom,
@@ -39,7 +46,7 @@ function TabScreenKeyboard() {
     if (heightTab) {
       heightTab = e.endCoordinates.height;
     }
-    AsyncStorage.setItem('heightKeyBoard', e.endCoordinates.height.toString());
+    setHeightKeyBoardStorage(e.endCoordinates.height.toString());
   }
 
   function handleImagePickerPress(value: number) {
@@ -75,9 +82,7 @@ function TabScreenKeyboard() {
   }, []);
 
   useEffect(() => {
-    (async () => {
-      heightTab = Number(await AsyncStorage.getItem('heightKeyBoard'));
-    })();
+    (async () => {})();
   }, []);
 
   return (
