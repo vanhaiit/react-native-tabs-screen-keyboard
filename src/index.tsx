@@ -16,10 +16,8 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 const storage = new MMKVLoader().initialize();
 let heightTab: number = 0;
 function TabScreenKeyboard() {
@@ -89,68 +87,63 @@ function TabScreenKeyboard() {
   }, []);
 
   return (
-    <SafeAreaProvider>
+    <View
+      style={{
+        ...styles.container,
+        paddingBottom: insets.bottom,
+        paddingTop: insets.top,
+      }}
+    >
+      <Pressable style={styles.chatContainer} onPress={handleFocusMain}>
+        <View />
+      </Pressable>
       <View
         style={{
-          ...styles.container,
-          paddingBottom: insets.bottom,
-          paddingTop: insets.top,
+          flexDirection: 'row',
+          alignItems: 'center',
+          padding: 10,
+          backgroundColor: '#f0f0f0',
         }}
       >
-        <Pressable style={styles.chatContainer} onPress={handleFocusMain}>
-          <View />
-        </Pressable>
-        <View
+        {data.map((e, index) => (
+          <Pressable onPress={() => handleImagePickerPress(e.key)} key={index}>
+            {e.label}
+          </Pressable>
+        ))}
+        <TextInput
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            padding: 10,
-            backgroundColor: '#f0f0f0',
+            flex: 1,
+            marginHorizontal: 10,
+            padding: 8,
+            backgroundColor: '#fff',
           }}
-        >
-          {data.map((e, index) => (
-            <Pressable
-              onPress={() => handleImagePickerPress(e.key)}
-              key={index}
-            >
-              {e.label}
-            </Pressable>
-          ))}
-          <TextInput
+          placeholder="Type a message..."
+          value={inputText}
+          onChangeText={setInputText}
+          onFocus={onFocusInput}
+          // onBlur={onBlur}
+        />
+        <TouchableOpacity>
+          <View
             style={{
-              flex: 1,
-              marginHorizontal: 10,
-              padding: 8,
-              backgroundColor: '#fff',
+              width: 24,
+              height: 24,
+              backgroundColor: 'blue',
+              borderRadius: 12,
             }}
-            placeholder="Type a message..."
-            value={inputText}
-            onChangeText={setInputText}
-            onFocus={onFocusInput}
-            // onBlur={onBlur}
           />
-          <TouchableOpacity>
-            <View
-              style={{
-                width: 24,
-                height: 24,
-                backgroundColor: 'blue',
-                borderRadius: 12,
-              }}
-            />
-          </TouchableOpacity>
-        </View>
-        <Animated.View style={translateStyle}>
-          {data.map((e, index) =>
-            tab === e.key ? (
-              <View style={{ flex: 1 }} key={index}>
-                {e.children}
-              </View>
-            ) : null
-          )}
-        </Animated.View>
+        </TouchableOpacity>
       </View>
-    </SafeAreaProvider>
+      <Animated.View style={translateStyle}>
+        {data.map((e, index) =>
+          tab === e.key ? (
+            <View style={{ flex: 1 }} key={index}>
+              {e.children}
+            </View>
+          ) : null
+        )}
+      </Animated.View>
+    </View>
   );
 }
 
