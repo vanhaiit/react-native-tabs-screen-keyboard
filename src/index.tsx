@@ -1,6 +1,13 @@
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import {
+  Keyboard,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+  type ViewStyle,
+} from 'react-native';
 import { MMKVLoader, useMMKVStorage } from 'react-native-mmkv-storage';
 import Animated, {
   useAnimatedKeyboard,
@@ -26,15 +33,15 @@ interface IProps {
   }>;
   children?: React.ReactNode;
   kStyle?: {
-    container: StyleSheet;
-    main: StyleSheet;
-    toolbar: StyleSheet;
-    prefix_container: StyleSheet;
-    suffix_container: StyleSheet;
-    screen: StyleSheet;
-    prefix: StyleSheet;
-    suffix: StyleSheet;
-    input: StyleSheet;
+    container: ViewStyle;
+    main: ViewStyle;
+    toolbar: ViewStyle;
+    prefix_container: ViewStyle;
+    suffix_container: ViewStyle;
+    screen: ViewStyle;
+    prefix: ViewStyle;
+    suffix: ViewStyle;
+    input: ViewStyle;
   };
 }
 /**
