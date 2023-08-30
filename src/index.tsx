@@ -1,14 +1,6 @@
-/* eslint-disable react-native/no-inline-styles */
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import {
-  Keyboard,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { MMKVLoader, useMMKVStorage } from 'react-native-mmkv-storage';
 import Animated, {
   useAnimatedKeyboard,
@@ -17,28 +9,62 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 const storage = new MMKVLoader().initialize();
-let heightTab: number = 0;
-function TabScreenKeyboard() {
+let heightTab: number = 300;
+interface IProps {
+  prefix: Array<{
+    key: number;
+    component: React.ReactNode;
+  }>;
+  suffix: Array<{
+    key: number;
+    component: React.ReactNode;
+  }>;
+  screens: Array<{
+    key: number;
+    component: React.ReactNode;
+  }>;
+  children?: React.ReactNode;
+  kStyle?: {
+    container: StyleSheet;
+    main: StyleSheet;
+    toolbar: StyleSheet;
+    prefix_container: StyleSheet;
+    suffix_container: StyleSheet;
+    screen: StyleSheet;
+    prefix: StyleSheet;
+    suffix: StyleSheet;
+    input: StyleSheet;
+  };
+}
+/**
+ * TabScreenKeyboard
+ * @param props
+ * @returns
+ */
+function TabScreenKeyboard(props: IProps) {
+  const { children, kStyle, prefix, suffix, screens } = props;
   const keyboard = useAnimatedKeyboard();
   const insets = useSafeAreaInsets();
   const offset = useSharedValue(0);
   const [tab, setTab] = useState<number | string | null | undefined>();
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState<string>('');
   const isKeyBoardRef = useRef(false);
   const [heightKeyBoard, setHeightKeyBoardStorage] = useMMKVStorage(
     'heightKeyBoard',
     storage,
-    0
+    300
   );
   heightTab = heightKeyBoard;
   const translateStyle = useAnimatedStyle(() => {
     return {
-      height: (offset.value || keyboard.height.value) - insets.bottom,
+      height: (+offset.value || keyboard.height.value) - insets.bottom,
     };
   });
-
+  /**
+   * handleKeyBoard
+   * @param event
+   */
   function handleKeyBoard(e: any) {
     if (isKeyBoardRef.current) {
       setTab(null);
@@ -48,10 +74,11 @@ function TabScreenKeyboard() {
     }
     setHeightKeyBoardStorage(e.endCoordinates.height.toString());
   }
-
-  function handleImagePickerPress(value: number) {
-    // Implement the logic to open the image picker here
-    // You can use libraries like 'react-native-image-picker' for this purpose
+  /**
+   * handlePickerScreen
+   * @param value
+   */
+  function handlePickerScreen(value: number) {
     offset.value =
       tab === undefined ? withTiming(heightTab, { duration: 250 }) : heightTab;
     setTab(() => {
@@ -59,13 +86,17 @@ function TabScreenKeyboard() {
       return value;
     });
   }
-
+  /**
+   * handleFocusMain
+   */
   function handleFocusMain() {
     offset.value = withTiming(0, { duration: 250 });
     setTab(undefined);
     Keyboard.dismiss();
   }
-
+  /**
+   * onFocusInput
+   */
   function onFocusInput() {
     if (!isKeyBoardRef.current) {
       setTab(null);
@@ -82,63 +113,59 @@ function TabScreenKeyboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    (async () => {})();
-  }, []);
-
   return (
     <View
       style={{
+        ...kStyle?.container,
         ...styles.container,
         paddingBottom: insets.bottom,
         paddingTop: insets.top,
       }}
     >
-      <Pressable style={styles.chatContainer} onPress={handleFocusMain}>
-        <View />
-      </Pressable>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          padding: 10,
-          backgroundColor: '#f0f0f0',
-        }}
+      <Pressable
+        style={{ ...kStyle?.main, ...styles.main }}
+        onPress={handleFocusMain}
       >
-        {data.map((e, index) => (
-          <Pressable onPress={() => handleImagePickerPress(e.key)} key={index}>
-            {e.label}
-          </Pressable>
-        ))}
+        {children}
+      </Pressable>
+      <View style={{ ...kStyle?.toolbar, ...styles.toolbar }}>
+        <View style={styles.prefix_container}>
+          {prefix.map((e, index) => (
+            <Pressable
+              style={{ ...kStyle?.prefix, ...styles.prefix }}
+              onPress={() => handlePickerScreen(e.key)}
+              key={index}
+            >
+              {e.component}
+            </Pressable>
+          ))}
+        </View>
         <TextInput
-          style={{
-            flex: 1,
-            marginHorizontal: 10,
-            padding: 8,
-            backgroundColor: '#fff',
-          }}
+          style={{ ...kStyle?.input, ...styles.input }}
           placeholder="Type a message..."
           value={inputText}
           onChangeText={setInputText}
           onFocus={onFocusInput}
-          // onBlur={onBlur}
         />
-        <TouchableOpacity>
-          <View
-            style={{
-              width: 24,
-              height: 24,
-              backgroundColor: 'blue',
-              borderRadius: 12,
-            }}
-          />
-        </TouchableOpacity>
+        <View
+          style={{ ...kStyle?.suffix_container, ...styles.suffix_container }}
+        >
+          {suffix.map((e, index) => (
+            <Pressable
+              style={{ ...kStyle?.suffix, ...styles.suffix }}
+              onPress={() => handlePickerScreen(e.key)}
+              key={index}
+            >
+              {e.component}
+            </Pressable>
+          ))}
+        </View>
       </View>
       <Animated.View style={translateStyle}>
-        {data.map((e, index) =>
+        {screens.map((e, index) =>
           tab === e.key ? (
-            <View style={{ flex: 1 }} key={index}>
-              {e.children}
+            <View style={{ ...kStyle?.screen, ...styles.screen }} key={index}>
+              {e.component}
             </View>
           ) : null
         )}
@@ -152,16 +179,38 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f0f0f0',
   },
-
-  textInput: {
-    flex: 1,
-    height: 40,
-    borderColor: '#000000',
-    borderBottomWidth: 1,
-    marginBottom: 36,
+  toolbar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
   },
-
-  chatContainer: {
+  prefix_container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+  },
+  suffix_container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+  },
+  prefix: {
+    backgroundColor: 'white',
+  },
+  suffix: {
+    backgroundColor: 'white',
+  },
+  screen: {
+    flex: 1,
+    borderColor: 'red',
+    borderWidth: 1,
+  },
+  input: {
+    flex: 1,
+    padding: 15,
+    backgroundColor: '#fff',
+  },
+  main: {
     flexGrow: 1,
     justifyContent: 'flex-end',
     paddingHorizontal: 16,
@@ -170,88 +219,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export const data = [
-  {
-    key: 1,
-    label: (
-      <View
-        style={{
-          width: 24,
-          height: 24,
-          backgroundColor: 'green',
-          borderRadius: 12,
-        }}
-      />
-    ),
-    children: <View style={{ flex: 1, backgroundColor: 'green' }} />,
-  },
-  {
-    key: 2,
-
-    label: (
-      <View
-        style={{
-          width: 24,
-          height: 24,
-          backgroundColor: 'red',
-          borderRadius: 12,
-        }}
-      />
-    ),
-    children: <View style={{ flex: 1, backgroundColor: 'red' }} />,
-  },
-  {
-    key: 3,
-    label: (
-      <View
-        style={{
-          width: 24,
-          height: 24,
-          backgroundColor: 'blue',
-          borderRadius: 12,
-        }}
-      />
-    ),
-    children: <View style={{ flex: 1, backgroundColor: 'blue' }} />,
-  },
-];
-
 export default TabScreenKeyboard;
-
-// import React from 'react';
-// import {Text, View, StyleSheet} from 'react-native';
-// import normalize from 'react-native-normalize';
-
-// export default class App extends React.Component {
-//   render() {
-//     return (
-//       <View style={styles.container}>
-//         <View style={styles.box}>
-//           <Text style={styles.text}>React Native Normalize</Text>
-//         </View>
-//       </View>
-//     );
-//   }
-// }
-
-// console.log(normalize(20));
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//   },
-//   box: {
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//     top: normalize(180, 'height'),
-//     left: normalize(40),
-//     width: normalize(300),
-//     height: normalize(300),
-//     borderRadius: normalize(150),
-//     backgroundColor: '#009fcd',
-//   },
-//   text: {
-//     fontSize: normalize(20),
-//     color: 'white',
-//   },
-// });
